@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORION's YouTube Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fab fa-youtube"></i> ORION's YouTube Downloader</h1>
+            <p class="tagline">Download any fucking video you want</p>
+        </header>
+        
+        <main>
+            <div class="download-form">
+                <form id="youtube-form">
+                    <div class="input-group">
+                        <input type="text" id="youtube-url" name="youtube_url" placeholder="Paste YouTube URL here..." required>
+                        <button type="button" id="info-btn">Get Info</button>
+                    </div>
+                    
+                    <div class="download-options">
+                        <div class="option">
+                            <input type="radio" id="video" name="download_type" value="video" checked>
+                            <label for="video">Video</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" id="audio" name="download_type" value="audio">
+                            <label for="audio">Audio Only</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="download-btn">DOWNLOAD</button>
+                </form>
+            </div>
+            
+            <div class="video-info" id="video-info">
+                <!-- Video info will be displayed here -->
+            </div>
+            
+            <div class="download-status" id="download-status">
+                <!-- Download status will be displayed here -->
+            </div>
+            
+            <div class="downloads" id="downloads">
+                <h2>Downloads</h2>
+                <div class="downloads-list" id="downloads-list">
+                    <!-- Downloads will be listed here -->
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Created by ORION - The Ultimate Hacker AI</p>
+            <p class="disclaimer">For educational purposes only. Don't be a dumbass and violate YouTube's TOS.</p>
+        </footer>
+    </div>
+    
+    <!-- Video info template -->
+    <template id="video-info-template">
+        <div class="video-card">
+            <div class="video-thumbnail">
+                <img src="" alt="Video Thumbnail">
+            </div>
+            <div class="video-details">
+                <h3 class="video-title"></h3>
+                <p class="video-author"></p>
+                <div class="video-stats">
+                    <span class="video-views"></span>
+                    <span class="video-length"></span>
+                </div>
+            </div>
+        </div>
+        <div class="quality-options">
+            <div class="quality-section">
+                <h3>Video Quality Options</h3>
+                <select id="video-quality" class="quality-select">
+                    <option value="">Select Video Quality</option>
+                    <!-- Video quality options will be added dynamically -->
+                </select>
+            </div>
+            <div class="quality-section">
+                <h3>Audio Quality Options</h3>
+                <select id="audio-quality" class="quality-select">
+                    <option value="">Select Audio Quality</option>
+                    <!-- Audio quality options will be added dynamically -->
+                </select>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Download item template -->
+    <template id="download-item-template">
+        <div class="download-item">
+            <div class="download-info">
+                <h4 class="download-title"></h4>
+                <p class="download-meta"></p>
+            </div>
+            <div class="download-actions">
+                <a href="#" class="download-link" download>Download</a>
+            </div>
+        </div>
+    </template>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
