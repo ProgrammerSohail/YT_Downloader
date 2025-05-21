@@ -3,59 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORION's YouTube Downloader</title>
+    <title>YTVideoMax - Modern YouTube Downloader</title>
+    <meta name="description" content="Download YouTube videos quickly and easily with YTVideoMax">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header class="app-header">
-            <h1 class="app-title"><i class="fab fa-youtube"></i> YTVideoMax</h1>
-            <p class="app-tagline">YouTube Downloader - Fast, Simple, Free</p>
+            <div class="logo-container">
+                <i class="fab fa-youtube"></i>
+            </div>
+            <h1 class="app-title">YTVideoMax</h1>
+            <p class="app-tagline">Download YouTube Videos in High Quality</p>
+            <p class="app-description">Fast • Simple • Free</p>
         </header>
-      
         <main class="app-main">
             <section class="download-section">
                 <form id="youtube-form" class="download-form">
                     <div class="input-group url-input-group">
-                        <input type="text" id="youtube-url" name="youtube_url" placeholder="Paste YouTube URL here..." required class="url-input">
-                        <button type="button" id="info-btn" class="info-button">Get Info</button>
+                        <div class="input-wrapper">
+                            <i class="fas fa-link input-icon"></i>
+                            <input type="text" 
+                                   id="youtube-url" 
+                                   name="youtube_url" 
+                                   placeholder="Paste YouTube URL here..." 
+                                   required 
+                                   class="url-input"
+                                   autocomplete="off">
+                        </div>
+                        <button type="button" id="info-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Get Info
+                        </button>
                     </div>                  
                 </form>
             </section>
 
-            <section class="video-info-section" id="video-info">
-                <!-- Video info will be displayed here -->
-                <p class="info-placeholder">Paste a YouTube URL above and click "Get Info" to see video details.</p>
+            <section class="video-info-section card" id="video-info">
+                <div class="card-content">
+                    <div class="placeholder-content">
+                        <i class="far fa-file-video placeholder-icon"></i>
+                        <p class="info-placeholder">Paste a YouTube URL above and click "Get Info" to see video details</p>
+                    </div>
+                </div>
             </section>
 
-            <section class="status-section" id="download-status">
-                <!-- Download status will be displayed here -->
-                <p class="status-placeholder">Download status will appear here.</p>
+            <section class="status-section card" id="download-status">
+                <div class="card-content">
+                    <div class="status-indicator">
+                        <div class="progress-ring"></div>
+                        <p class="status-placeholder">Ready to download</p>
+                    </div>
+                </div>
             </section>
 
             <section class="downloads-section" id="downloads">
-                <h2 class="section-title">
-                    Downloads
-                    <button id="clear-history-btn" class="clear-history-btn">Clear History</button>
-                </h2>
-                <div class="downloads-list" id="downloads-list">
-                    <!-- Downloads will be listed here -->
-                    <p class="downloads-placeholder">Completed downloads will show up here.</p>
+                <div class="section-header">
+                    <h2 class="section-title">Downloads</h2>
+                    <button id="clear-history-btn" class="btn btn-secondary">
+                        <i class="fas fa-trash-alt"></i>
+                        Clear History
+                    </button>
                 </div>
-            </section>
-        </main>
-          <footer class="site-footer">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <p class="developer-info">Developed with ❤️ by Sohail Khan</p>
-                    <div class="social-links">
-                        <a href="#" class="social-link" title="GitHub"><i class="fab fa-github"></i></a>
-                        <a href="#" class="social-link" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="social-link" title="Portfolio"><i class="fas fa-globe"></i></a>
+                <div class="downloads-list" id="downloads-list">
+                    <div class="placeholder-content">
+                        <i class="far fa-folder-open placeholder-icon"></i>
+                        <p class="downloads-placeholder">Your downloaded videos will appear here</p>
                     </div>
                 </div>
-                <p class="disclaimer">For educational purposes only. Please respect YouTube's Terms of Service.</p>
+            </section>
+        </main>          <footer class="site-footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="developer-section">
+                        <p class="developer-info">Crafted with <i class="fas fa-heart"></i> by Sohail Khan</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="social-link" title="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" class="social-link" title="Portfolio">
+                                <i class="fas fa-globe"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="footer-disclaimer">
+                        <p class="disclaimer">For educational purposes only. Please respect YouTube's Terms of Service.</p>
+                        <p class="version">Version 2.0</p>
+                    </div>
+                </div>
             </div>
         </footer>
     </div>

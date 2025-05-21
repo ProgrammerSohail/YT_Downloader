@@ -1,0 +1,42 @@
+:root {
+    /* Color Palette */
+    --primary-color: #FFB800;
+    --secondary-color: #FFD700;
+    --background-color: #FFFAF0;
+    --text-color: #333333;
+    --accent-color: #FFF5E6;
+    --error-color: #FF3D00;
+    --success-color: #4CAF50;
+    
+    /* Gradients */
+    --golden-gradient: linear-gradient(145deg, #FFD700, #FFA500);
+    --background-gradient: linear-gradient(145deg, #FFFAF0, #FFF5E6);
+    
+    /* Shadows */
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --button-shadow: 0 4px 15px rgba(255, 184, 0, 0.3);
+    
+    /* Border Radius */
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-xxl: 2rem;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+}
