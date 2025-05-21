@@ -128,12 +128,15 @@ async function getVideoInfo() {
         const uniqueAudioFormats = Array.from(audioFormatsMap.values());
         
         qualityContainer.innerHTML = `
+        <h1 class="video-audio">Select Video/Audio Quality</h1>
+                <p class="video-audio-alert">Choose the quality you want to download. You can select both video and audio if you want to merge them.</p>
             <div class="quality-section">
+            
                 <h3>Video Quality Options</h3>
                 <select id="video-quality-select" class="quality-select">
                     <option value="">Select Video Quality</option>
                     ${uniqueVideoFormats.map(format => {
-                        const streamType = format.type === 'video_progressive' ? 'Video + Audio' : 'Video Only';
+                        const streamType = format.type === 'video_progressive' ? 'Video + Audio' : 'Also Select Audio';
                         return `<option value="${format.itag}">${format.resolution || 'Unknown'} ${format.fps || ''}fps (${streamType}) - ${format.size}</option>`;
                     }).join('')}
                 </select>
@@ -141,7 +144,7 @@ async function getVideoInfo() {
             <div class="quality-section">
                 <h3>Audio Quality Options</h3>
                 <select id="audio-quality-select" class="quality-select">
-                    <option value="">Select Audio Quality</option>
+                    <option value=""> Quality</option>
                     ${uniqueAudioFormats.map(format => {
                         return `<option value="${format.itag}">${format.abr || 'Unknown'} - ${format.size}</option>`;
                     }).join('')}
@@ -369,5 +372,87 @@ async function downloadVideo(e) {
     function formatDate(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+});
+
+function handleDownloadButtonClick(event) {
+    event.preventDefault();
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    button.disabled = true;
+    button.textContent = 'Processing...';
+    button.style.opacity = '0.7';
+
+    // Get selected quality
+    const qualitySelect = document.querySelector('.quality-select');
+    const selectedQuality = qualitySelect.value;
+
+    if (!selectedQuality) {
+        showNotification('Please select a video quality', 'error');
+        button.disabled = false;
+        button.textContent = originalText;
+        button.style.opacity = '1';
+        return;
+    }
+
+    // Get video URL from the input field
+    const videoUrl = document.getElementById('video-url').value;
+
+    if (!videoUrl) {
+        showNotification('Please enter a video URL', 'error');
+        button.disabled = false;
+        button.textContent = originalText;
+        button.style.opacity = '1';
+        return;
+    }
+
+    // Add to download history
+    addToDownloadHistory(videoUrl, selectedQuality);
+
+    // Simulate download process (replace with actual download logic)
+    downloadVideo(videoUrl, selectedQuality)
+        .then(() => {
+            showNotification('Download started successfully!', 'success');
+            button.textContent = 'Downloaded!';
+            setTimeout(() => {
+                button.disabled = false;
+                button.textContent = originalText;
+                button.style.opacity = '1';
+            }, 2000);
+        })
+        .catch(error => {
+            showNotification('Download failed: ' + error.message, 'error');
+            button.disabled = false;
+            button.textContent = originalText;
+            button.style.opacity = '1';
+        });
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add event listener to download button
+document.querySelector('.download-button').addEventListener('click', handleDownloadButtonClick);
+
+// Initialize quality options with animation
+document.addEventListener('DOMContentLoaded', () => {
+    const qualityOptions = document.querySelector('.quality-options');
+    if (qualityOptions) {
+        qualityOptions.style.display = 'flex';
     }
 });
