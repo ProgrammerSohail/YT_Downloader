@@ -93,8 +93,8 @@ async function getVideoInfo() {
         videoInfoClone.querySelector('.video-thumbnail img').src = data.thumbnail_url;
         videoInfoClone.querySelector('.video-title').textContent = data.title;
         videoInfoClone.querySelector('.video-author').textContent = `by ${data.author}`;
-        videoInfoClone.querySelector('.video-views').textContent = `${formatNumber(data.views)} `;
-        videoInfoClone.querySelector('.video-length').textContent = `${formatDuration(data.length)} <i class="fas fa-clock"></i>`;
+        videoInfoClone.querySelector('.video-views').textContent = `${formatNumber(data.views)} views`;
+        videoInfoClone.querySelector('.video-length').textContent =`${ formatDuration(data.length)} minutes`;
         
         // Clear the video info section completely before adding new content
         videoInfoSection.innerHTML = '';
