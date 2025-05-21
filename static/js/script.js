@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoInfoSection = document.getElementById('video-info');
     const downloadStatusSection = document.getElementById('download-status');
     const downloadsList = document.getElementById('downloads-list');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
     
     // Templates
     const videoInfoTemplate = document.getElementById('video-info-template');
@@ -17,6 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     infoBtn.addEventListener('click', getVideoInfo);
     youtubeForm.addEventListener('submit', downloadVideo);
+    clearHistoryBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear your download history?')) {
+            downloads = [];
+            localStorage.setItem('ytDownloads', '[]');
+            renderDownloads();
+            showStatus('Download history cleared!', 'success');
+        }
+    });
     
     // Store downloads in session
     let downloads = JSON.parse(localStorage.getItem('ytDownloads') || '[]');
@@ -84,8 +93,8 @@ async function getVideoInfo() {
         videoInfoClone.querySelector('.video-thumbnail img').src = data.thumbnail_url;
         videoInfoClone.querySelector('.video-title').textContent = data.title;
         videoInfoClone.querySelector('.video-author').textContent = `by ${data.author}`;
-        videoInfoClone.querySelector('.video-views').textContent = `${formatNumber(data.views)} views`;
-        videoInfoClone.querySelector('.video-length').textContent = formatDuration(data.length);
+        videoInfoClone.querySelector('.video-views').textContent = `${formatNumber(data.views)} `;
+        videoInfoClone.querySelector('.video-length').textContent = `${formatDuration(data.length)} <i class="fas fa-clock"></i>`;
         
         // Clear the video info section completely before adding new content
         videoInfoSection.innerHTML = '';
@@ -138,11 +147,20 @@ async function getVideoInfo() {
                     }).join('')}
                 </select>
             </div>
+            <form id="download-form" class="download-form">
+                <button type="submit" id="download-btn" class="download-button">DOWNLOAD</button>
+            </form>
         `;
         
         // Append the quality container after the video info
         videoInfoSection.appendChild(qualityContainer);
         videoInfoSection.classList.add('active'); // Add active class back
+        
+        // Add event listener to the new download form
+        document.getElementById('download-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await downloadVideo(e);
+        });
         
         // Add event listeners to quality selectors
         document.getElementById('video-quality-select').addEventListener('change', function() {
@@ -173,13 +191,21 @@ async function getVideoInfo() {
     
     // Download video
 async function downloadVideo(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
     const url = youtubeUrl.value.trim();
     
     // Get selected video and audio itags
-    const selectedVideoItag = document.getElementById('video-quality-select') ? document.getElementById('video-quality-select').value : '';
-    const selectedAudioItag = document.getElementById('audio-quality-select') ? document.getElementById('audio-quality-select').value : '';
+    const videoSelect = document.getElementById('video-quality-select');
+    const audioSelect = document.getElementById('audio-quality-select');
+    
+    if (!videoSelect && !audioSelect) {
+        showStatus('No quality options available. Get video info first!', 'error');
+        return;
+    }
+    
+    const selectedVideoItag = videoSelect ? videoSelect.value : '';
+    const selectedAudioItag = audioSelect ? audioSelect.value : '';
     
     // Determine download type based on selection
     let downloadType = '';
@@ -277,11 +303,33 @@ async function downloadVideo(e) {
                 `${download.author} • ${download.fileSize} • ${download.type === 'audio' ? 'Audio' : 'Video'} • ${formatDate(download.timestamp)}`;
             
             const downloadLink = downloadItemClone.querySelector('.download-link');
-            downloadLink.href = `/get_file/${download.filePath.split('/').pop()}`;
-            downloadLink.textContent = download.type === 'audio' ? 'Download MP3' : 'Download MP4';
+            if (downloadLink && download.filePath) {
+               
+                downloadLink.textContent = download.type === 'audio' ? 'Downloaded Audio Successfully' : 'Downloaded Video Successfully';
+            }
+            
+            const deleteBtn = downloadItemClone.querySelector('.delete-download');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', () => {
+                    const index = downloads.findIndex(d => d.id === download.id);
+                    if (index !== -1) {
+                        downloads.splice(index, 1);
+                        localStorage.setItem('ytDownloads', JSON.stringify(downloads));
+                        renderDownloads();
+                        showStatus('Download removed from history!', 'success');
+                    }
+                });
+            }
             
             downloadsList.appendChild(downloadItemClone);
         });
+    }
+    
+    function deleteDownload(index) {
+        downloads.splice(index, 1);
+        localStorage.setItem('ytDownloads', JSON.stringify(downloads));
+        renderDownloads();
+        showStatus('Download removed from history!', 'success');
     }
     
     // Show status message

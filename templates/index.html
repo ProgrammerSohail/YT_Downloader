@@ -9,48 +9,41 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1><i class="fab fa-youtube"></i> ORION's YouTube Downloader</h1>
-            <p class="tagline">Download any fucking video you want</p>
+        <header class="app-header">
+            <h1 class="app-title"><i class="fab fa-youtube"></i> YTVideoMax</h1>
+            <p class="app-tagline">YouTube Downloader - Fast, Simple, Free</p>
         </header>
-        
-        <main>
-            <div class="download-form">
-                <form id="youtube-form">
-                    <div class="input-group">
-                        <input type="text" id="youtube-url" name="youtube_url" placeholder="Paste YouTube URL here..." required>
-                        <button type="button" id="info-btn">Get Info</button>
-                    </div>
-                    
-                    <div class="download-options">
-                        <div class="option">
-                            <input type="radio" id="video" name="download_type" value="video" checked>
-                            <label for="video">Video</label>
-                        </div>
-                        <div class="option">
-                            <input type="radio" id="audio" name="download_type" value="audio">
-                            <label for="audio">Audio Only</label>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" id="download-btn">DOWNLOAD</button>
+      
+        <main class="app-main">
+            <section class="download-section">
+                <form id="youtube-form" class="download-form">
+                    <div class="input-group url-input-group">
+                        <input type="text" id="youtube-url" name="youtube_url" placeholder="Paste YouTube URL here..." required class="url-input">
+                        <button type="button" id="info-btn" class="info-button">Get Info</button>
+                    </div>                  
                 </form>
-            </div>
-            
-            <div class="video-info" id="video-info">
+            </section>
+
+            <section class="video-info-section" id="video-info">
                 <!-- Video info will be displayed here -->
-            </div>
-            
-            <div class="download-status" id="download-status">
+                <p class="info-placeholder">Paste a YouTube URL above and click "Get Info" to see video details.</p>
+            </section>
+
+            <section class="status-section" id="download-status">
                 <!-- Download status will be displayed here -->
-            </div>
-            
-            <div class="downloads" id="downloads">
-                <h2>Downloads</h2>
+                <p class="status-placeholder">Download status will appear here.</p>
+            </section>
+
+            <section class="downloads-section" id="downloads">
+                <h2 class="section-title">
+                    Downloads
+                    <button id="clear-history-btn" class="clear-history-btn">Clear History</button>
+                </h2>
                 <div class="downloads-list" id="downloads-list">
                     <!-- Downloads will be listed here -->
+                    <p class="downloads-placeholder">Completed downloads will show up here.</p>
                 </div>
-            </div>
+            </section>
         </main>
         
         <footer>
@@ -67,29 +60,14 @@
             </div>
             <div class="video-details">
                 <h3 class="video-title"></h3>
-                <p class="video-author"></p>
                 <div class="video-stats">
-                    <span class="video-views"></span>
-                    <span class="video-length"></span>
+                <p class="video-author"></p>
+                 <span class="video-views"></span>
+                   <span class="video-length"></span>
+                    
                 </div>
             </div>
-        </div>
-        <div class="quality-options">
-            <div class="quality-section">
-                <h3>Video Quality Options</h3>
-                <select id="video-quality" class="quality-select">
-                    <option value="">Select Video Quality</option>
-                    <!-- Video quality options will be added dynamically -->
-                </select>
-            </div>
-            <div class="quality-section">
-                <h3>Audio Quality Options</h3>
-                <select id="audio-quality" class="quality-select">
-                    <option value="">Select Audio Quality</option>
-                    <!-- Audio quality options will be added dynamically -->
-                </select>
-            </div>
-        </div>
+        </div>        <!-- Quality options will be added dynamically by JavaScript -->
     </template>
     
     <!-- Download item template -->
@@ -100,7 +78,8 @@
                 <p class="download-meta"></p>
             </div>
             <div class="download-actions">
-                <a href="#" class="download-link" download>Download</a>
+                <a href="#" class="download-link btn-small">Download</a>
+                <button class="delete-download btn-small"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     </template>
