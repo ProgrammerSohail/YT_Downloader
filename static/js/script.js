@@ -235,48 +235,9 @@ async function downloadVideo(e) {
         return;
     }
     
-    // Construct the download URL with parameters
-    let downloadUrl = `/download?youtube_url=${encodeURIComponent(url)}`;
-    if (selectedVideoItag) {
-        downloadUrl += `&video_itag=${selectedVideoItag}`;
-    }
-    if (selectedAudioItag) {
-        downloadUrl += `&audio_itag=${selectedAudioItag}`;
-    }
-
-    // Create a temporary link and trigger the download
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    // The backend sets the Content-Disposition header, but adding download attribute is good practice
-    // link.download = \`\${document.querySelector(\'.video-title\').textContent || \'video\'}.\${downloadType === \'audio\' ? \'mp3\' : \'mp4\'}\`; // Optional: suggest filename
-    
-    // Show a status message indicating download is starting (browser handles progress)
-    showStatus('Your download is starting... Check your browser\'s downloads section.', 'loading');
-
-    // Append to body and click
-    document.body.appendChild(link);
-    link.click();
-
-    // Clean up the temporary link
-    document.body.removeChild(link);
-
-    // We no longer need to process the response or manually add to history for automatic downloads
-    // The history logic below is likely for a different flow or should be adjusted.
-
-    // Keep the existing download history update logic for now, but understand it won't track progress
-    // or re-downloads for merged files with this automatic download method.
-    // You may want to rethink the download history UI/logic based on this change.
-
-    // Example of how you might still add to history (without the green download button for merged):
-    // if (downloadType === 'merged' || downloadType === 'video' || downloadType === 'audio') {
-    //     addToDownloadHistory(\`\${document.querySelector(\'.video-title\').textContent || \'Video\'} (\${downloadType})\`);\n    // }\n
-
-    // The current addToDownloadHistory function seems to expect a filename to create a link.
-    // We should probably modify or bypass it for the streaming download.
-    
-    // Temporarily disable or comment out the existing fetch logic and subsequent response handling:
-    /*
-    try {
+    // Show loading
+    showStatus('<div class="loading"></div> Downloading... This might take a minute, be patient!', 'loading');
+      try {
         const formData = new FormData();
         formData.append('youtube_url', url);
         
@@ -287,67 +248,96 @@ async function downloadVideo(e) {
         if (selectedAudioItag) {
             formData.append('audio_itag', selectedAudioItag);
         }
+        
+        console.log("Sending download request with video_itag:", selectedVideoItag, "and audio_itag:", selectedAudioItag);
+        
+        // Create a temporary download link
+        const downloadUrl = `/download?youtube_url=${encodeURIComponent(url)}&video_itag=${selectedVideoItag}&audio_itag=${selectedAudioItag}`;
+        
+        // Create an anchor element to trigger the download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = ''; // This will use the server's suggested filename
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
 
-        const response = await fetch('/download', {
-            method: 'GET', 
-            body: formData // This is incorrect for GET, params should be in URL
+        // Get the metadata for the download history
+        const response = await fetch('/video_metadata', {
+            method: 'POST',
+            body: formData
         });
         
-        // --- The following response processing is for a non-streaming JSON response ---\n        // For streaming download, the browser handles the response directly.\n
-
         const data = await response.json();
         
-        if (data.status === 'success') {
-            showStatus(`Successfully downloaded: ${data.title}`, 'success');
-            // addToDownloadHistory(data); // This needs adjustment
-        } else {
-            showStatus(`Download failed: ${data.message}`, 'error');
-        }
-        
-    } catch (error) {
-        showStatus(`Error during download: ${error.message}`, 'error');
-    }
-    */
-}
-    
-    // Render downloads list
-    function renderDownloads() {
-        downloadsList.innerHTML = '';
-        
-        if (downloads.length === 0) {
-            downloadsList.innerHTML = '<p class="no-downloads">No downloads yet. Get downloading, you lazy fuck!</p>';
+        if (data.status === 'error') {
+            showStatus(data.message, 'error');
             return;
         }
         
-        downloads.forEach(download => {
-            const downloadItemClone = downloadItemTemplate.content.cloneNode(true);
-            
-            downloadItemClone.querySelector('.download-title').textContent = download.title;
-            downloadItemClone.querySelector('.download-meta').textContent = 
-                `${download.author} • ${download.fileSize} • ${download.type === 'audio' ? 'Audio' : 'Video'} • ${formatDate(download.timestamp)}`;
-            
-            const downloadLink = downloadItemClone.querySelector('.download-link');
-            if (downloadLink && download.filePath) {
-               
-                downloadLink.textContent = download.type === 'audio' ? 'Downloaded Audio Successfully' : 'Downloaded Video Successfully';
-            }
-            
-            const deleteBtn = downloadItemClone.querySelector('.delete-download');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', () => {
-                    const index = downloads.findIndex(d => d.id === download.id);
-                    if (index !== -1) {
-                        downloads.splice(index, 1);
-                        localStorage.setItem('ytDownloads', JSON.stringify(downloads));
-                        renderDownloads();
-                        showStatus('Download removed from history!', 'success');
-                    }
-                });
-            }
-            
-            downloadsList.appendChild(downloadItemClone);
-        });
+        // Show success
+        showStatus(`Successfully downloaded: ${data.title}`, 'success');
+        
+        // Add to downloads
+        const download = {
+            id: Date.now(),
+            title: data.title,
+            author: data.author,
+            fileSize: data.file_size,
+            filePath: data.file_path,
+            type: downloadType,
+            timestamp: new Date().toISOString()
+        };
+        
+        downloads.unshift(download);
+        localStorage.setItem('ytDownloads', JSON.stringify(downloads.slice(0, 10))); // Keep only last 10
+        
+        // Render downloads
+        renderDownloads();
+        
+    } catch (error) {
+        showStatus(`Error: ${error.message}`, 'error');
     }
+}
+    
+    // Render downloads list
+    // function renderDownloads() {
+    //     downloadsList.innerHTML = '';
+        
+    //     if (downloads.length === 0) {
+    //         downloadsList.innerHTML = '<p class="no-downloads">No downloads yet. Get downloading, you lazy fuck!</p>';
+    //         return;
+    //     }
+        
+    //     downloads.forEach(download => {
+    //         const downloadItemClone = downloadItemTemplate.content.cloneNode(true);
+            
+    //         downloadItemClone.querySelector('.download-title').textContent = download.title;
+    //         downloadItemClone.querySelector('.download-meta').textContent = 
+    //             `${download.author} • ${download.fileSize} • ${download.type === 'audio' ? 'Audio' : 'Video'} • ${formatDate(download.timestamp)}`;
+            
+    //         const downloadLink = downloadItemClone.querySelector('.download-link');
+    //         if (downloadLink && download.filePath) {
+               
+    //             downloadLink.textContent = download.type === 'audio' ? 'Downloaded Audio Successfully' : 'Downloaded Video Successfully';
+    //         }
+            
+    //         const deleteBtn = downloadItemClone.querySelector('.delete-download');
+    //         if (deleteBtn) {
+    //             deleteBtn.addEventListener('click', () => {
+    //                 const index = downloads.findIndex(d => d.id === download.id);
+    //                 if (index !== -1) {
+    //                     downloads.splice(index, 1);
+    //                     localStorage.setItem('ytDownloads', JSON.stringify(downloads));
+    //                     renderDownloads();
+    //                     showStatus('Download removed from history!', 'success');
+    //                 }
+    //             });
+    //         }
+            
+    //         downloadsList.appendChild(downloadItemClone);
+    //     });
+    // }
     
     function deleteDownload(index) {
         downloads.splice(index, 1);

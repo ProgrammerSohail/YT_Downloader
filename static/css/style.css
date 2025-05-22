@@ -22,7 +22,7 @@ body {
 .container {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 20px;
+ 
 }
 
 /* Header Styles */
@@ -66,16 +66,8 @@ body {
     margin-bottom: 30px;
 }
 
-.download-form {
 
-    padding: 30px;
-   
-    transition: transform var(--transition-speed);
-}
 
-.download-form:hover {
-    transform: translateY(-5px);
-}
 
 .url-input-group {
     display: flex;
@@ -807,13 +799,7 @@ footer {
         font-size: 1rem;
     }
     
-    .download-form {
-        width: 100%;
-        padding: 20px;
-        background-color: var(--card-bg);
-        box-shadow: #7979791d 0px 0px 20px 0px;
-        border-radius: 12px;
-    }
+ 
     
     .url-input-group {
         flex-direction: column;
@@ -934,7 +920,7 @@ footer {
 
 .site-footer {
     margin-top: auto;
-    padding: 2rem 0;
+    
     background: linear-gradient(to right, rgba(51, 51, 51, 0.98), rgba(34, 34, 34, 0.98));
     color: #fff;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -988,9 +974,7 @@ footer {
 }
 
 @media (max-width: 768px) {
-    .site-footer {
-        padding: 1.5rem 0;
-    }
+    
 
     .footer-content {
         padding: 0 1rem;

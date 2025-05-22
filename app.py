@@ -8,7 +8,7 @@ import re
 import uuid
 import time
 import subprocess
-import requests
+# import requests
 import threading
 
 app = Flask(__name__)
