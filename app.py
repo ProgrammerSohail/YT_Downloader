@@ -1,12 +1,15 @@
 # YouTube Downloader Backend - Coded by ORION
 # This shit will download any YouTube video you throw at it
 
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, Response
 from pytubefix import YouTube
 import os
 import re
 import uuid
 import time
+import subprocess
+import requests
+import threading
 
 app = Flask(__name__)
 app.config['DOWNLOAD_FOLDER'] = 'downloads'
@@ -19,202 +22,178 @@ if not os.path.exists(app.config['DOWNLOAD_FOLDER']):
 def index():
     return render_template('index.html')
 
-@app.route('/download', methods=['POST'])
+@app.route('/download', methods=['GET'])
 def download_video():
     try:
-        # Get the YouTube URL and options from the form
-        youtube_url = request.form.get('youtube_url')
-        video_itag = request.form.get('video_itag') # Get selected video itag
-        audio_itag = request.form.get('audio_itag') # Get selected audio itag
+        youtube_url = request.args.get('youtube_url')
+        video_itag = request.args.get('video_itag')
+        audio_itag = request.args.get('audio_itag')
         
-        # Validate URL (basic check)
+        # Validate URL
         if not youtube_url or not re.match(r'^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$', youtube_url):
             return jsonify({
                 'status': 'error',
-                'message': 'Invalid YouTube URL, dumbass!'
+                'message': 'Invalid YouTube URL format'
             }), 400
         
-        print(f"Attempting to create YouTube object for URL: {youtube_url}")
-        # Create a YouTube object with a fix for the 400 error
-        # Adding a custom header to avoid the 400 Bad Request error
-        yt = YouTube(
-            youtube_url,
-            use_oauth=False,
-            allow_oauth_cache=False
-        )
-        print(f"Successfully created YouTube object for title: {yt.title}")
-        
+        try:
+            yt = YouTube(youtube_url, use_oauth=False, allow_oauth_cache=False)
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to fetch video information: {str(e)}'
+            }), 400
+            
         # Generate a unique filename base
         unique_id = str(uuid.uuid4())[:8]
         safe_title = re.sub(r'[^\w\-_\. ]', '_', yt.title)
         base_filename = f"{safe_title}_{unique_id}"
+        
+        try:
+            # Check if ffmpeg is available for merge operations
+            if video_itag and audio_itag:
+                try:
+                    subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    return jsonify({
+                        'status': 'error',
+                        'message': 'ffmpeg is not installed. Required for merging video and audio.'
+                    }), 500
 
-        video_filepath = None
-        audio_filepath = None
-        output_filepath = None
+            # Single video download (with audio)
+            if video_itag and not audio_itag:
+                video_stream = yt.streams.get_by_itag(int(video_itag))
+                if not video_stream:
+                    return jsonify({'status': 'error', 'message': 'Selected video quality is no longer available'}), 400
+                
+                filename = f"{base_filename}.{video_stream.mime_type.split('/')[1]}"
+                response = send_file(
+                    video_stream.url,
+                    as_attachment=True,
+                    download_name=filename,
+                    mimetype=video_stream.mime_type
+                )
+                response.headers['Content-Length'] = str(video_stream.filesize)
+                return response
 
-        # Download video stream if itag is provided
-        if video_itag:
-            print(f"Attempting to get video stream with itag {video_itag}")
-            video_stream = yt.streams.get_by_itag(int(video_itag))
-            if not video_stream or 'video' not in video_stream.mime_type:
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Selected video quality not available or not a video stream.'
-                }), 400
+            # Audio only download
+            elif audio_itag and not video_itag:
+                audio_stream = yt.streams.get_by_itag(int(audio_itag))
+                if not audio_stream:
+                    return jsonify({'status': 'error', 'message': 'Selected audio quality is no longer available'}), 400
+                
+                filename = f"{base_filename}_audio.{audio_stream.mime_type.split('/')[1]}"
+                response = send_file(
+                    audio_stream.url,
+                    as_attachment=True,
+                    download_name=filename,
+                    mimetype=audio_stream.mime_type
+                )
+                response.headers['Content-Length'] = str(audio_stream.filesize)
+                return response
 
-            video_filename = f"{base_filename}_video_{video_stream.resolution}.{video_stream.mime_type.split('/')[1]}"
-            video_filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], video_filename)
-            print(f"Attempting to download video stream to {video_filepath}")
-            video_stream.download(output_path=app.config['DOWNLOAD_FOLDER'], filename=video_filename)
-            print(f"Video download complete for itag {video_itag}")
+            # Merged download (video + audio)
+            elif video_itag and audio_itag:
+                video_stream = yt.streams.get_by_itag(int(video_itag))
+                audio_stream = yt.streams.get_by_itag(int(audio_itag))
+                
+                if not video_stream or not audio_stream:
+                    return jsonify({'status': 'error', 'message': 'Selected quality not available'}), 400
+                
+                # Create temporary files
+                temp_video = os.path.join(app.config['DOWNLOAD_FOLDER'], f"temp_video_{unique_id}.{'mp4'}") # Use mp4 extension for consistency
+                temp_audio = os.path.join(app.config['DOWNLOAD_FOLDER'], f"temp_audio_{unique_id}.{'aac' if 'aac' in audio_stream.mime_type else 'mp4'}") # Use aac or mp4 extension
+                output_file = os.path.join(app.config['DOWNLOAD_FOLDER'], f"{base_filename}_merged.mp4")
+                
+                def generate_merged_stream():
+                    # This function will now encapsulate the download, merge, and streaming logic
+                    try:
+                        print("Attempting to download video stream to temporary file...")
+                        video_stream.download(output_path=app.config['DOWNLOAD_FOLDER'], filename=os.path.basename(temp_video))
+                        print("Video download complete.")
 
-        # Download audio stream if itag is provided
-        if audio_itag:
-            print(f"Attempting to get audio stream with itag {audio_itag}")
-            audio_stream = yt.streams.get_by_itag(int(audio_itag))
-            if not audio_stream or 'audio' not in audio_stream.mime_type:
-                # If a video was downloaded, delete it as we can't merge without audio
-                if video_filepath and os.path.exists(video_filepath):
-                    os.remove(video_filepath)
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Selected audio quality not available or not an audio stream.'
-                }), 400
+                        print("Attempting to download audio stream to temporary file...")
+                        audio_stream.download(output_path=app.config['DOWNLOAD_FOLDER'], filename=os.path.basename(temp_audio))
+                        print("Audio download complete.")
+                        
+                        print("Attempting to merge with ffmpeg...")
+                        # Merge with ffmpeg (re-encoding audio to aac)
+                        subprocess.run([
+                            'ffmpeg', '-i', temp_video, '-i', temp_audio,
+                            '-c:v', 'copy', '-c:a', 'aac', '-strict', 'experimental', output_file
+                        ], check=True)
+                        print("FFmpeg merge complete.")
+                        
+                        print("Attempting to stream merged file...")
+                        # Stream the merged file directly to the user
+                        with open(output_file, 'rb') as f:
+                            chunk = f.read(8192)
+                            while chunk:
+                                yield chunk
+                                chunk = f.read(8192)
+                        print("Streaming complete.")
 
-            audio_filename = f"{base_filename}_audio_{audio_stream.abr}.{audio_stream.mime_type.split('/')[1]}"
-            audio_filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], audio_filename)
-            print(f"Attempting to download audio stream to {audio_filepath}")
-            audio_stream.download(output_path=app.config['DOWNLOAD_FOLDER'], filename=audio_filename)
-            print(f"Audio download complete for itag {audio_itag}")
+                    except Exception as e:
+                        print(f"Error during download/merge streaming: {str(e)}")
+                        # Re-raise the exception so it can be caught by the outer try block
+                        raise
 
-        # --- Merging Step (Requires FFmpeg) ---
-        # If both video and audio were downloaded, merge them
-        if video_filepath and audio_filepath:
-            final_filename = f"{base_filename}_merged.mp4"
-            output_filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], final_filename)
-            print(f"Attempting to merge video ({video_filepath}) and audio ({audio_filepath}) into {output_filepath}")
-            # Use subprocess to call ffmpeg
-            # NOTE: FFmpeg must be installed and in the system's PATH
-            import subprocess
-            try:
-                # Basic ffmpeg command to merge video and audio without re-encoding
-                subprocess.run([
-                    'ffmpeg',
-                    '-i', video_filepath,
-                    '-i', audio_filepath,
-                    '-c', 'copy',
-                    '-map', '0:v:0',
-                    '-map', '1:a:0',
-                    output_filepath
-                ], check=True)
-                print("Merging complete")
-                # Clean up individual video and audio files after merging
-                os.remove(video_filepath)
-                os.remove(audio_filepath)
-                download_type = 'video' # Indicate a video file was the primary result
-            except FileNotFoundError:
-                print("[!] FFmpeg command failed: FFmpeg not found. Install FFmpeg to merge streams.")
-                # Don't delete video/audio files if merge fails due to missing ffmpeg
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Merging failed: FFmpeg not found. Install FFmpeg to download selected video and audio qualities together.'
-                }), 500
-            except subprocess.CalledProcessError as e:
-                print(f"[!] FFmpeg command failed: {e}")
-                # Don't delete video/audio files if merge fails
-                return jsonify({
-                    'status': 'error',
-                    'message': f'Merging failed: FFmpeg error. {e}'
-                }), 500
+                    finally:
+                        # Clean up temporary files immediately after streaming or on error
+                        print("Initiating cleanup of temporary files...")
+                        for file in [temp_video, temp_audio, output_file]:
+                            if os.path.exists(file):
+                                try:
+                                    os.remove(file)
+                                    print(f"Cleaned up {file}")
+                                except Exception as cleanup_e:
+                                    print(f"Error cleaning up file {file}: {cleanup_e}")
+                        print("Cleanup complete.")
 
-        elif video_filepath:
-            # Only video was downloaded (progressive or video-only without selected audio)
-            output_filepath = video_filepath
-            download_type = 'video'
-        elif audio_filepath:
-            # Only audio was downloaded
-            output_filepath = audio_filepath
-            download_type = 'audio'
-        else:
-            # Nothing was downloaded (shouldn't happen with frontend validation, but as a fallback)
-            return jsonify({
-                'status': 'error',
-                'message': 'No stream selected for download.'
-            }), 400
+                # Set appropriate headers for the response
+                headers = {
+                    'Content-Disposition': f'attachment; filename="{os.path.basename(output_file)}"',
+                    'Content-Type': 'video/mp4' # Assuming merged output is mp4
+                }
+                
+                # Create a streaming response using the generator
+                response = Response(generate_merged_stream(), headers=headers)
+                
+                return response
 
-        # Determine the stream used for reporting size and details
-        # Prioritize merged stream info if available, then video, then audio
-        report_stream = None
-        if 'merged' in final_filename if final_filename else False:
-            # For merged files, we don't have a single stream object for size.
-            # We'll need to get the size of the output file.
-            try:
-                output_file_size_bytes = os.path.getsize(output_filepath)
-                report_file_size = f"{output_file_size_bytes / (1024 * 1024):.2f} MB"
-            except OSError:
-                report_file_size = 'N/A' # Could not get file size
-            report_title = yt.title # Use video title for merged file
-            report_author = yt.author
-        elif video_itag and video_stream:
-            report_stream = video_stream
-            report_title = yt.title
-            report_author = yt.author
-            report_file_size = f"{report_stream.filesize / (1024 * 1024):.2f} MB" if report_stream.filesize else 'N/A'
-        elif audio_itag and audio_stream:
-            report_stream = audio_stream
-            # Use video title/author for audio downloads too for consistency
-            report_title = yt.title
-            report_author = yt.author
-            report_file_size = f"{report_stream.filesize / (1024 * 1024):.2f} MB" if report_stream.filesize else 'N/A'
-        else:
-            # Fallback, should use info from the single downloaded stream if no itags provided
-            # (e.g., default progressive or audio) - this part might need refinement
-            # based on the exact stream object available here.
-            # For now, assume we can get the stream object from the single downloaded file.
-            # This is complex without re-fetching stream info, let's just report basic info
-            report_title = yt.title
-            report_author = yt.author
-            try:
-                output_file_size_bytes = os.path.getsize(output_filepath)
-                report_file_size = f"{output_file_size_bytes / (1024 * 1024):.2f} MB" if output_file_size_bytes else 'N/A'
-            except OSError:
-                report_file_size = 'N/A'
+            else:
+                # Handle case where neither video nor audio itag is provided
+                 return jsonify({
+                     'status': 'error',
+                     'message': 'No video or audio quality selected for download.'
+                 }), 400
 
-        # Return success with file info
+        except Exception as e:
+            # Broader exception catch for issues during stream fetching, ffmpeg errors, etc.
+            print(f"Error within inner try block: {str(e)}")
+            return jsonify({'status': 'error', 'message': f"Shit broke during download/merge: {str(e)}"}), 500
+
+    except Exception as e:
+        # Catch exceptions related to initial YouTube object creation or URL validation
+        print(f"Error within outer try block: {str(e)}")
+        return jsonify({'status': 'error', 'message': f"Error processing request: {str(e)}"}), 500
+
+# Add a route for video metadata
+@app.route('/video_metadata', methods=['POST'])
+def get_video_metadata():
+    try:
+        youtube_url = request.form.get('youtube_url')
+        yt = YouTube(youtube_url, use_oauth=False, allow_oauth_cache=False)
         return jsonify({
             'status': 'success',
-            'message': f"Downloaded: {report_title}",
-            'file_path': output_filepath,
-            'title': report_title,
-            'author': report_author,
-            'file_size': report_file_size,
-            'type': download_type # Report the final type (video, audio, or merged video)
+            'title': yt.title,
+            'author': yt.author,
+            'length': yt.length,
+            'views': yt.views,
+            'thumbnail_url': yt.thumbnail_url
         })
-        
     except Exception as e:
-        # Clean up any partially downloaded files on error
-        if 'video_filepath' in locals() and video_filepath and os.path.exists(video_filepath):
-            os.remove(video_filepath)
-        if 'audio_filepath' in locals() and audio_filepath and os.path.exists(audio_filepath):
-            os.remove(audio_filepath)
-        if 'output_filepath' in locals() and output_filepath and os.path.exists(output_filepath):
-            os.remove(output_filepath)
-
-        return jsonify({
-            'status': 'error',
-            'message': f"Shit broke during download/merge: {str(e)}"
-        }), 500
-
-@app.route('/get_file/<path:filename>')
-def get_file(filename):
-    try:
-        return send_file(os.path.join(app.config['DOWNLOAD_FOLDER'], filename), as_attachment=True)
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f"File not found: {str(e)}"
-        }), 404
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/video_info', methods=['POST'])
 def get_video_info():

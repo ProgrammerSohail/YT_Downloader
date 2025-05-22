@@ -235,9 +235,47 @@ async function downloadVideo(e) {
         return;
     }
     
-    // Show loading
-    showStatus('<div class="loading"></div> Downloading... This might take a minute, be patient!', 'loading');
+    // Construct the download URL with parameters
+    let downloadUrl = `/download?youtube_url=${encodeURIComponent(url)}`;
+    if (selectedVideoItag) {
+        downloadUrl += `&video_itag=${selectedVideoItag}`;
+    }
+    if (selectedAudioItag) {
+        downloadUrl += `&audio_itag=${selectedAudioItag}`;
+    }
+
+    // Create a temporary link and trigger the download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    // The backend sets the Content-Disposition header, but adding download attribute is good practice
+    // link.download = \`\${document.querySelector(\'.video-title\').textContent || \'video\'}.\${downloadType === \'audio\' ? \'mp3\' : \'mp4\'}\`; // Optional: suggest filename
     
+    // Show a status message indicating download is starting (browser handles progress)
+    showStatus('Your download is starting... Check your browser\'s downloads section.', 'loading');
+
+    // Append to body and click
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up the temporary link
+    document.body.removeChild(link);
+
+    // We no longer need to process the response or manually add to history for automatic downloads
+    // The history logic below is likely for a different flow or should be adjusted.
+
+    // Keep the existing download history update logic for now, but understand it won't track progress
+    // or re-downloads for merged files with this automatic download method.
+    // You may want to rethink the download history UI/logic based on this change.
+
+    // Example of how you might still add to history (without the green download button for merged):
+    // if (downloadType === 'merged' || downloadType === 'video' || downloadType === 'audio') {
+    //     addToDownloadHistory(\`\${document.querySelector(\'.video-title\').textContent || \'Video\'} (\${downloadType})\`);\n    // }\n
+
+    // The current addToDownloadHistory function seems to expect a filename to create a link.
+    // We should probably modify or bypass it for the streaming download.
+    
+    // Temporarily disable or comment out the existing fetch logic and subsequent response handling:
+    /*
     try {
         const formData = new FormData();
         formData.append('youtube_url', url);
@@ -249,44 +287,27 @@ async function downloadVideo(e) {
         if (selectedAudioItag) {
             formData.append('audio_itag', selectedAudioItag);
         }
-        
-        console.log("Sending download request with video_itag:", selectedVideoItag, "and audio_itag:", selectedAudioItag);
-        
+
         const response = await fetch('/download', {
-            method: 'POST',
-            body: formData
+            method: 'GET', 
+            body: formData // This is incorrect for GET, params should be in URL
         });
         
+        // --- The following response processing is for a non-streaming JSON response ---\n        // For streaming download, the browser handles the response directly.\n
+
         const data = await response.json();
         
-        if (data.status === 'error') {
-            showStatus(data.message, 'error');
-            return;
+        if (data.status === 'success') {
+            showStatus(`Successfully downloaded: ${data.title}`, 'success');
+            // addToDownloadHistory(data); // This needs adjustment
+        } else {
+            showStatus(`Download failed: ${data.message}`, 'error');
         }
         
-        // Show success
-        showStatus(`Successfully downloaded: ${data.title}`, 'success');
-        
-        // Add to downloads
-        const download = {
-            id: Date.now(),
-            title: data.title,
-            author: data.author,
-            fileSize: data.file_size,
-            filePath: data.file_path,
-            type: downloadType,
-            timestamp: new Date().toISOString()
-        };
-        
-        downloads.unshift(download);
-        localStorage.setItem('ytDownloads', JSON.stringify(downloads.slice(0, 10))); // Keep only last 10
-        
-        // Render downloads
-        renderDownloads();
-        
     } catch (error) {
-        showStatus(`Error: ${error.message}`, 'error');
+        showStatus(`Error during download: ${error.message}`, 'error');
     }
+    */
 }
     
     // Render downloads list
@@ -374,6 +395,104 @@ async function downloadVideo(e) {
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     }
 });
+
+async function downloadStream(url, filename) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const contentLength = response.headers.get('content-length');
+        const total = parseInt(contentLength, 10);
+        let loaded = 0;
+        
+        // Create a ReadableStream to track progress
+        const reader = response.body.getReader();
+        const stream = new ReadableStream({
+            async start(controller) {
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    
+                    loaded += value.length;
+                    const progress = (loaded / total) * 100;
+                    updateDownloadProgress(progress.toFixed(2));
+                    
+                    controller.enqueue(value);
+                }
+                controller.close();
+            }
+        });
+        
+        // Create response with the stream
+        const newResponse = new Response(stream);
+        const blob = await newResponse.blob();
+        
+        // Create download link
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        a.remove();
+        
+        updateDownloadStatus('success', 'Download completed successfully!');
+        addToDownloadHistory(filename);
+    } catch (error) {
+        console.error('Download failed:', error);
+        updateDownloadStatus('error', `Download failed: ${error.message}`);
+        throw error;
+    }
+}
+
+function updateDownloadProgress(progress) {
+    const statusElement = document.querySelector('.status-placeholder');
+    const progressRing = document.querySelector('.progress-ring');
+    
+    if (statusElement && progressRing) {
+        statusElement.textContent = `Downloading: ${progress}%`;
+        // Update progress ring animation
+        progressRing.style.background = `conic-gradient(var(--primary-color) ${progress * 3.6}deg, var(--bg-secondary) 0deg)`;
+    }
+}
+
+function updateDownloadStatus(type, message) {
+    const statusElement = document.querySelector('.status-placeholder');
+    const progressRing = document.querySelector('.progress-ring');
+    
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `status-placeholder ${type}`;
+        
+        if (type === 'success') {
+            progressRing.style.background = 'var(--success-color)';
+        } else if (type === 'error') {
+            progressRing.style.background = 'var(--error-color)';
+        }
+    }
+}
+
+function addToDownloadHistory(filename) {
+    const downloadsList = document.getElementById('downloads-list');
+    const placeholder = downloadsList.querySelector('.placeholder-content');
+    
+    if (placeholder) {
+        placeholder.style.display = 'none';
+    }
+    
+    const downloadItem = document.createElement('div');
+    downloadItem.className = 'download-item';
+    downloadItem.innerHTML = `
+        <i class="fas fa-file-video"></i>
+        <span class="download-name">${filename}</span>
+        <span class="download-time">${new Date().toLocaleTimeString()}</span>
+    `;
+    
+    downloadsList.insertBefore(downloadItem, downloadsList.firstChild);
+}
 
 function handleDownloadButtonClick(event) {
     event.preventDefault();
