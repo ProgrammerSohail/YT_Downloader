@@ -21,7 +21,7 @@ const DownloadForm = () => {
                         </svg>
                     </div>
                     <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
-                        YouTube Downloader
+                       4K YouTube Downloader
                     </h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
                         Download high-quality videos and audio from YouTube with ease. Simply paste the URL and choose your preferred format.
