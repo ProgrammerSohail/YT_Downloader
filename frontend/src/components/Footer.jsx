@@ -1,11 +1,12 @@
 import React from 'react';
-import { Heart, Code, Shield, Mail, AppWindow, Globe, GithubIcon } from 'lucide-react';
+import { Heart, Code, Shield, Mail, AppWindow, Globe, GithubIcon, Linkedin } from 'lucide-react';
 
 const Footer = () => {
     const socialLinks = [
         { icon: GithubIcon, href: "https://github.com/ProgrammerSohail", label: "GitHub" },
         { icon: Globe, href: "https://devsohail.netlify.app/", label: "Website" },
-        { icon: Mail, href: "programmersohail.dev@gmail.com", label: "Email" }
+        { icon: Mail, href: "programmersohail.dev@gmail.com", label: "Email" },
+        {icon: Linkedin, href: "https://www.linkedin.com/in/sohail-khan-8b0a1b1b4/", label: "LinkedIn" },
     ];
 
     return (
