@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const DownloadContext = createContext();
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:5000';
 
 export const DownloadProvider = ({ children }) => {
     const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -76,10 +77,8 @@ export const DownloadProvider = ({ children }) => {
 
         try {
             const formData = new FormData();
-            formData.append('youtube_url', url);
-
-            // First get formats
-            const formatsResponse = await fetch('/formats', {
+            formData.append('youtube_url', url);            // First get formats
+            const formatsResponse = await fetch(`${BASE_URL}/formats`, {
                 method: 'POST',
                 body: formData
             });
@@ -92,7 +91,7 @@ export const DownloadProvider = ({ children }) => {
             }
 
             // Then get video info
-            const response = await fetch('/video_info', {
+            const response = await fetch(`${BASE_URL}/video_info`, {
                 method: 'POST',
                 body: formData
             });
@@ -143,10 +142,8 @@ export const DownloadProvider = ({ children }) => {
             }
             if (selectedAudioItag) {
                 formData.append('audio_itag', selectedAudioItag);
-            }
-
-            // Trigger download by creating a temporary link
-            const downloadUrl = `/download?youtube_url=${encodeURIComponent(url)}&video_itag=${selectedVideoItag || ''}&audio_itag=${selectedAudioItag || ''}`;
+            }            // Trigger download by creating a temporary link
+            const downloadUrl = `${BASE_URL}/download?youtube_url=${encodeURIComponent(url)}&video_itag=${selectedVideoItag || ''}&audio_itag=${selectedAudioItag || ''}`;
             const downloadLink = document.createElement('a');
             downloadLink.href = downloadUrl;
             downloadLink.download = ''; // Use server's suggested filename
@@ -155,7 +152,7 @@ export const DownloadProvider = ({ children }) => {
             document.body.removeChild(downloadLink);
 
             // Get metadata for download history
-            const metadataResponse = await fetch('/video_metadata', {
+            const metadataResponse = await fetch(`${BASE_URL}/video_metadata`, {
                 method: 'POST',
                 body: formData
             });

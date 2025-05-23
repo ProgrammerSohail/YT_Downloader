@@ -2,6 +2,7 @@ import React from 'react';
 import { Heart, Code, Shield, Mail, AppWindow, Globe, GithubIcon, Linkedin } from 'lucide-react';
 
 const Footer = () => {
+     const Name = process.env.NEXT_PUBLIC_NAME || '8K Blitz';
     const socialLinks = [
         { icon: GithubIcon, href: "https://github.com/ProgrammerSohail", label: "GitHub" },
         { icon: Globe, href: "https://devsohail.netlify.app/", label: "Website" },
@@ -24,7 +25,7 @@ const Footer = () => {
                         <div className="flex items-center">
                             <Code className="w-5 h-5 text-purple-400 mr-2" />
                             <span className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                YTVideoMax
+                                {Name}
                             </span>
                         </div>
                         <div className="flex space-x-2">

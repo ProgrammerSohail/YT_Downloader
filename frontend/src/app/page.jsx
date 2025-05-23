@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
      
-      <main >
+      <main className='pt-32 pd:mt-20 lg:pt-0 min-h-[100dvh]' >
         <DownloadForm /> {/* Use the new DownloadForm component */}
         <VideoInfoDisplay /> {/* Use the new VideoInfoDisplay component */}
         {/* <DownloadStatusDisplay /> */}

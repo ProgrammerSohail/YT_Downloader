@@ -255,3 +255,10 @@ input:focus, select:focus, textarea:focus {
         transform: translateY(0);
     }
 }
+.corner{
+  border-radius: 0% 0% 100% 0%;
+}
+.corner-right{
+  border-radius: 0% 0%  0% 100%;
+  
+}
