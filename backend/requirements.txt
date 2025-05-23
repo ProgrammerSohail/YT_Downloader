@@ -1,6 +1,6 @@
 # ORION's YouTube Downloader - Requirements
 flask==2.3.2
-pytubefix
+yt-dlp
 Werkzeug==2.3.6
 Jinja2==3.1.2
 itsdangerous==2.1.2
