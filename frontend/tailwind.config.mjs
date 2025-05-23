@@ -8,20 +8,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#FFB800',
-        secondary: '#FFD700',
-        background: '#FFFAF0',
-        text: '#333333',
-        accent: '#FFF5E6',
-        error: '#FF3D00',
-        success: '#4CAF50',
+        primary: '#FF0000',
+        secondary: '#000000',
+        background: '#FFFFFF',
+        text: '#000000',
+        accent: '#FF0000',
+        error: '#FF0000',
+        success: '#000000',
         // Existing colors
         'var-background': "var(--background)",
         'var-foreground': "var(--foreground)",
       },
       boxShadow: {
         card: '0 8px 30px rgba(0, 0, 0, 0.08)',
-        button: '0 4px 15px rgba(255, 184, 0, 0.3)',
+        button: '0 4px 15px rgba(255, 0, 0, 0.3)',
       },
       borderRadius: {
         'sm': '8px',

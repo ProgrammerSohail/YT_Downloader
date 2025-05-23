@@ -1,5 +1,6 @@
 import './globals.css'; // Keep global styles for Tailwind and any custom CSS
 import ClientLayout from '../components/ClientLayout';
+import Footer from '@/components/Footer';
 
 export const metadata = {
   title: 'YTVideoMax - Modern YouTube Downloader',
@@ -13,9 +14,10 @@ export default function RootLayout({ children }) {
         {/* Font Awesome for icons */}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
       </head>
-      <body className="font-inter bg-[linear-gradient(145deg,rgba(241,241,241,0.9),rgb(255,215,215))] text-text leading-relaxed min-h-screen">
+      <body>
         <ClientLayout>
           {children}
+          <Footer/>
         </ClientLayout>
       </body>
     </html>
