@@ -1,0 +1,273 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Base styles from original CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+  --primary: #ff4d4f;
+  --primary-light: #ffeaea;
+  --primary-dark: #b71c1c;
+  --background: #f8f9fb;
+  --card-bg: #fff;
+  --text: #222;
+  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+  --border-radius: 1.5rem;
+  --sidebar-bg: #fff6f6;
+}
+
+[data-theme='dark'] {
+  --primary: #ff4d4f;
+  --primary-light: #2d2323;
+  --primary-dark: #ff7a7c;
+  --background: #18191a;
+  --card-bg: #232526;
+  --text: #f5f5f5;
+  --shadow: 0 4px 24px rgba(0,0,0,0.25);
+  --sidebar-bg: #231818;
+}
+
+html, body {
+  background: var(--background);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255,77,79,0.08);
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+.button:hover {
+  background: var(--primary-dark);
+}
+
+input, select, textarea {
+  background: var(--primary-light);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: background 0.2s, color 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--primary);
+  background: #fff;
+}
+
+.sidebar {
+  background: var(--sidebar-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem 1.5rem;
+  min-width: 220px;
+  min-height: 80vh;
+  transition: background 0.3s;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #ffeaea 0%, #fff6f6 100%);
+}
+[data-theme='dark'] .gradient-bg {
+  background: linear-gradient(135deg, #2d2323 0%, #231818 100%);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    min-width: 60px;
+    padding: 1rem 0.5rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    display: none;
+  }
+  .card {
+    padding: 0.75rem;
+    border-radius: 1rem;
+  }
+}
+
+/* Custom styles for elements that are hard to do with pure Tailwind */
+
+/* Progress Ring Animation */
+.progress-ring {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #FFF5E6; /* accent-color */
+    border-top: 4px solid #FFB800; /* primary-color */
+    border-radius: 50%;
+    margin: 0 auto 16px; /* spacing-md */
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Video Info Section active state */
+.video-info-section.active {
+    opacity: 1;
+    height: auto;
+    padding: 30px;
+    transform: translateY(0);
+}
+
+/* Status Section active state */
+.status-section.active {
+    opacity: 1;
+    height: auto;
+    padding: 20px;
+}
+
+/* Animations from style.css */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Specific pseudo-elements or complex styles */
+.video-author::before {
+    content: '\f007';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 1rem;
+    color: #FFB800; /* primary-color */
+}
+
+.video-stats .views::before {
+    content: '\f06e';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #FFB800; /* primary-color */
+}
+
+.video-stats .duration::before {
+    content: '\f017';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #FFB800; /* primary-color */
+}
+
+.status-success::before {
+    content: '✓';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #4CAF50; /* success-color */
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+}
+
+.status-error::before {
+    content: '✕';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #f44336; /* error-color */
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+}
+
+/* Notification Styles - these will likely be handled by a React component, but keeping the CSS here for now */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateX(120%);
+    transition: transform 0.3s ease-out;
+    z-index: 1000;
+    font-size: 0.9rem;
+    max-width: 350px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: #4CAF50;
+    color: white;
+    border-left: 4px solid #388E3C;
+}
+
+.notification.error {
+    background: #f44336;
+    color: white;
+    border-left: 4px solid #d32f2f;
+}
+
+.notification.info {
+    background: #2196F3;
+    color: white;
+    border-left: 4px solid #1976D2;
+}
+
+@media (max-width: 768px) {
+    .notification {
+        top: auto;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        transform: translateY(120%);
+    }
+
+    .notification.show {
+        transform: translateY(0);
+    }
+}

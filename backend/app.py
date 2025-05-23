@@ -1,7 +1,8 @@
 # YouTube Downloader Backend - Coded by ORION
 # This shit will download any YouTube video you throw at it
 
-from flask import Flask, render_template, request, send_file, jsonify, Response
+from flask import Flask, request, send_file, jsonify, Response
+from flask_cors import CORS # Import CORS
 from pytubefix import YouTube
 import os
 import re
@@ -12,6 +13,7 @@ import subprocess
 import threading
 
 app = Flask(__name__)
+CORS(app) # Initialize CORS
 app.config['DOWNLOAD_FOLDER'] = 'downloads'
 
 # Create downloads directory if it doesn't exist
@@ -20,7 +22,7 @@ if not os.path.exists(app.config['DOWNLOAD_FOLDER']):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return jsonify({"message": "Backend API is running"}) # Return JSON instead of rendering template
 
 @app.route('/download', methods=['GET'])
 def download_video():
@@ -264,7 +266,8 @@ def get_video_info():
             'thumbnail_url': yt.thumbnail_url,
             'length': yt.length,
             'views': yt.views,
-            'streams': streams_info
+            'streams': streams_info,
+            'youtube_url': youtube_url  # Add the YouTube URL to the response
         })
         
     except Exception as e:
