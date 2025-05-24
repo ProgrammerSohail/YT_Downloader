@@ -9,13 +9,23 @@ const VideoInfoDisplay = () => {
 
     if (isLoading && !videoInfo) {
         return (
-            <div className="mx-auto flex flex-col items-center justify-center h-32 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 max-w-md p-8">
-                <div className="relative w-12 h-12 mb-4">
-                    <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="mx-auto flex flex-col items-center justify-center h-48 max-w-md p-8">
+            <div className="relative w-16 h-16 mb-6">
+                <div className="absolute inset-0">
+                <div className="w-16 h-16 border-4 border-blue-200/30 border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
-                <p className="text-gray-700 font-medium text-lg">Getting video info...</p>
-                <p className="text-gray-500 text-sm mt-1">Please wait a moment</p>
+                <div className="absolute inset-0 rotate-45">
+                <div className="w-16 h-16 border-4 border-purple-200/20 border-t-purple-400 rounded-full animate-spin-slow"></div>
+                </div>
+            </div>
+            <div className="text-center">
+                <p className="text-gray-800 font-semibold text-xl mb-2">
+                Getting video info...
+                </p>
+                <p className="text-gray-500 text-sm bg-gray-100/50 px-4 py-2 rounded-full inline-block">
+                Please wait a moment
+                </p>
+            </div>
             </div>
         );
     }
