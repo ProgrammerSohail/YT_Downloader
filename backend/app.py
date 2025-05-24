@@ -13,6 +13,7 @@ import time
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import json
+import random # Add random for user agent rotation
 
 # Configure logging for better debugging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -57,9 +58,9 @@ def get_cached_info(url):
             logger.info(f"🚀 Using cached info for: {cached_data.get('title', 'Unknown')}")
             return cached_data
     
-    # Fetch new info
+    # Fetch new info with bypass opts
     logger.info(f"🔍 Fetching new info for: {url}")
-    with YoutubeDL(YDL_OPTS_BASE) as ydl:
+    with YoutubeDL(get_ydl_opts()) as ydl:
         info = ydl.extract_info(url, download=False)
     
     # Cache the result
@@ -105,7 +106,7 @@ def download_video():
             }), 400
         
         try:
-            # Use cached info for faster processing
+            # Use cached info for faster processing with bypass opts
             info = get_cached_info(youtube_url)
             logger.info(f"📺 Processing: {info.get('title', 'Unknown')[:50]}...")
         except Exception as e:
@@ -134,9 +135,9 @@ def download_video():
                     filename = f"{base_filename}.{ext}"
                     filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], filename)
                     
-                    # Ultra-fast download with optimized settings
+                    # Ultra-fast download with optimized settings and bypass opts
                     ydl_opts = {
-                        **YDL_OPTS_BASE,
+                        **get_ydl_opts(),
                         'format': str(video_itag),
                         'outtmpl': filepath,
                         'concurrent_fragment_downloads': 4,  # Parallel fragments
@@ -171,7 +172,7 @@ def download_video():
                 filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], filename)
                 
                 ydl_opts = {
-                    **YDL_OPTS_BASE,
+                    **get_ydl_opts(),
                     'format': str(audio_itag),
                     'outtmpl': filepath,
                     'concurrent_fragment_downloads': 4,
@@ -219,7 +220,7 @@ def download_video():
                 logger.info(f"🚀 Attempting native yt-dlp merge: {format_string}")
                 
                 ydl_opts = {
-                    **YDL_OPTS_BASE,
+                    **get_ydl_opts(),
                     'format': format_string,
                     'outtmpl': output_path,
                     'merge_output_format': 'mp4',
@@ -258,12 +259,12 @@ def download_video():
                     temp_audio = os.path.join(app.config['DOWNLOAD_FOLDER'], f"temp_a_{unique_id}.{audio_format.get('ext', 'm4a')}")
                     
                     def download_video_stream():
-                        ydl_opts = {**YDL_OPTS_BASE, 'format': str(video_itag), 'outtmpl': temp_video}
+                        ydl_opts = {**get_ydl_opts(), 'format': str(video_itag), 'outtmpl': temp_video}
                         with YoutubeDL(ydl_opts) as ydl:
                             ydl.download([youtube_url])
                     
                     def download_audio_stream():
-                        ydl_opts = {**YDL_OPTS_BASE, 'format': str(audio_itag), 'outtmpl': temp_audio}
+                        ydl_opts = {**get_ydl_opts(), 'format': str(audio_itag), 'outtmpl': temp_audio}
                         with YoutubeDL(ydl_opts) as ydl:
                             ydl.download([youtube_url])
                     
@@ -328,7 +329,7 @@ def get_video_metadata():
         if not validate_youtube_url(youtube_url):
             return jsonify({'status': 'error', 'message': 'Invalid YouTube URL'}), 400
         
-        # Use cached info for instant response
+        # Use cached info for instant response with bypass opts
         info = get_cached_info(youtube_url)
         
         elapsed = time.time() - start_time
@@ -357,7 +358,7 @@ def get_video_info():
             
         logger.info(f"📊 Getting video info for: {youtube_url}")
         
-        # Use cached info for speed
+        # Use cached info for speed with bypass opts
         info = get_cached_info(youtube_url)
         
         logger.info(f"📺 Processing: {info.get('title', 'Unknown')[:50]}...")
@@ -423,9 +424,9 @@ def get_video_info():
                     'url': fmt.get('url')
                 }
                 stream_data.update({
-                    'type': 'audio',
+                'type': 'audio',
                     'abr': fmt.get('abr', ''),
-                })
+            })
                 streams_info.append(stream_data)
         
         elapsed = time.time() - start_time
@@ -460,7 +461,8 @@ def get_formats():
         
         logger.info(f"📊 Getting formats for: {youtube_url}")
         
-        with YoutubeDL(YDL_OPTS_BASE) as ydl:
+        # Fetch formats with bypass opts
+        with YoutubeDL(get_ydl_opts()) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
         
         logger.info(f"✅ Successfully fetched formats for: {info.get('title', '')}")
@@ -554,6 +556,55 @@ def periodic_cleanup(cleanup_interval_seconds=3600, file_age_seconds=7200):
                 logger.info("🧹 Periodic cleanup found no old files to remove.")
         except Exception as e:
             logger.error(f"❌ Error during periodic cleanup scan: {e}")
+
+def get_ydl_opts():
+    # Random user agents to rotate
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/121.0'
+    ]
+    
+    return {
+        'quiet': True,
+        'no_warnings': True,
+        'noplaylist': True,
+        'extract_flat': False,
+        'writethumbnail': False,
+        'writeinfojson': False,
+        'socket_timeout': 30,
+        'retries': 5, # Increase retries
+        'fragment_retries': 5, # Increase fragment retries
+        'skip_unavailable_fragments': True,
+        'ignoreerrors': False,
+        # Bot detection bypass options
+        'http_headers': {
+            'User-Agent': random.choice(user_agents), # Rotate User Agent
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-us,en;q=0.5',
+            'Accept-Encoding': 'gzip,deflate',
+            'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+            'Keep-Alive': '300',
+            'Connection': 'keep-alive',
+        },
+        # Additional bypass options for YouTube
+        'extractor_args': {
+            'youtube': {
+                'skip_dash_manifest': True,
+                'player_skip_js': False, # Sometimes skipping JS helps, sometimes not
+                'player_client': ['android', 'web'], # Emulate different clients
+            }
+        },
+        # Add random delays
+        'sleep_interval': 1, # Minimum sleep between operations
+        'max_sleep_interval': 5, # Maximum sleep between operations
+        'sleep_interval_requests': 1, # Sleep between requests to same host
+        
+        'format_sort': ['res', 'ext:mp4:m4a'], # Prioritize MP4/M4A and resolution
+    }
 
 if __name__ == "__main__":
     logger.info("Starting YouTube Downloader Backend with yt-dlp...")
