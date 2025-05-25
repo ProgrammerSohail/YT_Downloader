@@ -47,24 +47,33 @@ const VideoInfoDisplay = () => {
         );
     }
 
-    // Filter and group video formats by resolution and type
+    // Filter and group video formats by resolution and type, and audio formats by abr from the flat list
     const videoFormatsMap = new Map();
-    formats.video.forEach(format => {
-        const key = `${format.resolution || 'Unknown'}-${format.type}`;
-        if (!videoFormatsMap.has(key)) {
-            videoFormatsMap.set(key, format);
-        }
-    });
-    const uniqueVideoFormats = Array.from(videoFormatsMap.values());
-
-    // Filter and group audio formats by abr
     const audioFormatsMap = new Map();
-    formats.audio.forEach(format => {
-        const key = `${format.abr || 'Unknown'}`;
-        if (!audioFormatsMap.has(key)) {
-            audioFormatsMap.set(key, format);
+    
+    formats.forEach(format => {
+        const vcodec = format.vcodec || 'none';
+        const acodec = format.acodec || 'none';
+
+        if (vcodec !== 'none') {
+            // It's a video stream (can be progressive or video-only)
+            const key = `${format.resolution || 'Unknown'}-${format.type}`;
+            if (!videoFormatsMap.has(key)) {
+                videoFormatsMap.set(key, format);
+            }
+        }
+        
+        // Check if it's an audio stream (can be audio-only or part of progressive)
+        // We'll add it to the audio map if it has an audio codec and is not already added by abr
+        if (acodec !== 'none') {
+             const key = `${format.abr || format.audio_channels || 'Unknown'}`;
+             if (!audioFormatsMap.has(key)) {
+                 audioFormatsMap.set(key, format);
+             }
         }
     });
+    
+    const uniqueVideoFormats = Array.from(videoFormatsMap.values());
     const uniqueAudioFormats = Array.from(audioFormatsMap.values());
 
     const handleDownloadSubmit = (e) => {
