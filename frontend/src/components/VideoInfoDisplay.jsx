@@ -10,17 +10,17 @@ const VideoInfoDisplay = () => {
     if (isLoading && !videoInfo) {
         return (
             <div className="mx-auto flex flex-col items-center justify-center h-48 max-w-md p-8">
-            <div className="relative w-16 h-16 mb-6">
-                
-            </div>
-            <div className="text-center">
-                <p className="text-gray-800 font-semibold text-xl mb-2">
-                Getting video info...
-                </p>
-                <p className="text-gray-500 text-sm bg-gray-100/50 px-4 py-2 rounded-full inline-block">
-                Please wait a moment
-                </p>
-            </div>
+                <div className="relative w-16 h-16 mb-6">
+
+                </div>
+                <div className="text-center">
+                    <p className="text-gray-800 font-semibold text-xl mb-2">
+                        Getting video info...
+                    </p>
+                    <p className="text-gray-500 text-sm bg-gray-100/50 px-4 py-2 rounded-full inline-block">
+                        Please wait a moment
+                    </p>
+                </div>
             </div>
         );
     }
@@ -45,7 +45,7 @@ const VideoInfoDisplay = () => {
     // Filter and group video formats by resolution and type, and audio formats by abr from the flat list
     const videoFormatsMap = new Map();
     const audioFormatsMap = new Map();
-    
+
     formats.forEach(format => {
         const vcodec = format.vcodec || 'none';
         const acodec = format.acodec || 'none';
@@ -57,17 +57,17 @@ const VideoInfoDisplay = () => {
                 videoFormatsMap.set(key, format);
             }
         }
-        
+
         // Check if it's an audio stream (can be audio-only or part of progressive)
         // We'll add it to the audio map if it has an audio codec and is not already added by abr
         if (acodec !== 'none') {
-             const key = `${format.abr || format.audio_channels || 'Unknown'}`;
-             if (!audioFormatsMap.has(key)) {
-                 audioFormatsMap.set(key, format);
-             }
+            const key = `${format.abr || format.audio_channels || 'Unknown'}`;
+            if (!audioFormatsMap.has(key)) {
+                audioFormatsMap.set(key, format);
+            }
         }
     });
-    
+
     const uniqueVideoFormats = Array.from(videoFormatsMap.values());
     const uniqueAudioFormats = Array.from(audioFormatsMap.values());
 
@@ -87,29 +87,29 @@ const VideoInfoDisplay = () => {
                         {/* Enhanced Thumbnail */}
                         <div className="flex-shrink-0 relative group">
                             <div className="w-full md:w-72 md:h-44 bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                                <img 
-                                    src={videoInfo.thumbnail_url} 
-                                    alt="Video Thumbnail" 
-                                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105" 
-                                    style={{ maxHeight: 180 }} 
+                                <img
+                                    src={videoInfo.thumbnail_url}
+                                    alt="Video Thumbnail"
+                                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+                                    style={{ maxHeight: 180 }}
                                 />
                             </div>
                             {/* Play overlay */}
                             <div className="absolute inset-0 bg-black/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                 <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
                                     <svg className="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z"/>
+                                        <path d="M8 5v14l11-7z" />
                                     </svg>
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Video Info */}
                         <div className="flex-1 flex flex-col gap-4 min-w-0">
                             <h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 leading-tight">
                                 {videoInfo.title}
                             </h3>
-                            
+
                             {/* Enhanced Stats */}
                             <div className="flex flex-wrap gap-3 text-sm">
                                 <span className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
@@ -120,7 +120,7 @@ const VideoInfoDisplay = () => {
                                     </div>
                                     <span className="font-medium text-blue-800">{videoInfo.author}</span>
                                 </span>
-                                
+
                                 <span className="flex items-center gap-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
                                     <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
                                         <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ const VideoInfoDisplay = () => {
                                     </div>
                                     <span className="font-medium text-green-800">{formatNumber(videoInfo.views)} views</span>
                                 </span>
-                                
+
                                 <span className="flex items-center gap-2 bg-purple-50 border border-purple-200 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
                                     <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center">
                                         <svg className="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,11 +143,11 @@ const VideoInfoDisplay = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Download Options Section */}
                 <div className="p-8 bg-gray-50/50">
                     <h4 className="text-xl font-bold text-gray-800 mb-6">Download Options</h4>
-                    
+
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col md:flex-row gap-6">
                             {/* Video Quality Select */}
@@ -164,8 +164,18 @@ const VideoInfoDisplay = () => {
                                     >
                                         <option value="">Select Video Quality</option>
                                         {uniqueVideoFormats.map(format => (
-                                            <option key={format.itag} value={format.itag}>
-                                                {format.resolution || 'Unknown'} {format.fps || ''}fps ({format.type === 'video_progressive' ? 'Video + Audio' : 'Also Select Audio'}) - {format.size}
+
+                                            // Enhanced option (limited styling due to browser constraints)
+                                            <option
+                                                key={format.itag}
+                                                value={format.itag}
+                                               
+                                            >
+                                                <div  className="text-sm py-2 px-3 bg-white hover:bg-blue-50 border-b border-gray-100">
+                                                {`📹 ${format.resolution && format.resolution !== 'Unknown'
+                                                    ? `${format.resolution.split('x')[1]}p`
+                                                    : format.resolution || 'Unknown'} ${format.fps || ''}fps • ${format.type === 'video_progressive' ? '🎬 Video + Audio' : '🎬 Video'} • ${format.size}`}
+                                                    </div>
                                             </option>
                                         ))}
                                     </select>
@@ -176,7 +186,7 @@ const VideoInfoDisplay = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Audio Quality Select */}
                             <div className="flex-1">
                                 <label htmlFor="audio-quality-select" className="block mb-3 font-semibold text-gray-700 text-sm uppercase tracking-wide">
@@ -192,7 +202,7 @@ const VideoInfoDisplay = () => {
                                         <option value="">Select Audio Quality</option>
                                         {uniqueAudioFormats.map(format => (
                                             <option key={format.itag} value={format.itag}>
-                                                {format.abr || 'Unknown'} - {format.size}
+                                                {format.abr.toFixed(0) || 'Unknown'}{format.abr ? 'kbps' : ''} 🔊- {format.size} - {format.abr > 128 ? 'High Quality ✅' : 'Low Quality'}
                                             </option>
                                         ))}
                                     </select>
@@ -204,17 +214,16 @@ const VideoInfoDisplay = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Enhanced Download Button */}
                         <form onSubmit={handleDownloadSubmit} className="w-full mt-4">
-                            <button 
-                                type="submit" 
-                                id="download-btn" 
-                                className={`w-full py-5 rounded-2xl text-lg font-bold uppercase tracking-wide shadow-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-4 ${
-                                    isLoading 
-                                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                            <button
+                                type="submit"
+                                id="download-btn"
+                                className={`w-full py-5 rounded-2xl text-lg font-bold uppercase tracking-wide shadow-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-4 ${isLoading
+                                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                                         : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white hover:shadow-xl focus:ring-emerald-500/50'
-                                }`}
+                                    }`}
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
