@@ -11,12 +11,7 @@ const VideoInfoDisplay = () => {
         return (
             <div className="mx-auto flex flex-col items-center justify-center h-48 max-w-md p-8">
             <div className="relative w-16 h-16 mb-6">
-                <div className="absolute inset-0">
-                <div className="w-16 h-16 border-4 border-blue-200/30 border-t-blue-500 rounded-full animate-spin"></div>
-                </div>
-                <div className="absolute inset-0 rotate-45">
-                <div className="w-16 h-16 border-4 border-purple-200/20 border-t-purple-400 rounded-full animate-spin-slow"></div>
-                </div>
+                
             </div>
             <div className="text-center">
                 <p className="text-gray-800 font-semibold text-xl mb-2">
