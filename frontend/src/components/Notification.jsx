@@ -30,7 +30,7 @@ const Notification = () => {
     }
 
     return (
-        <div className={notificationClass}>
+        <div className={`${notificationClass} animate-pulse `} >
             {downloadStatus.message}
         </div>
     );

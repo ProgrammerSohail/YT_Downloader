@@ -10,17 +10,16 @@ const VideoInfoDisplay = () => {
     if (isLoading && !videoInfo) {
         return (
             <div className="mx-auto flex flex-col items-center justify-center h-48 max-w-md p-8">
-                <div className="relative w-16 h-16 mb-6">
+           
+<div class="loader">
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
 
-                </div>
-                <div className="text-center">
-                    <p className="text-gray-800 font-semibold text-xl mb-2">
-                        Getting video info...
-                    </p>
-                    <p className="text-gray-500 text-sm bg-gray-100/50 px-4 py-2 rounded-full inline-block">
-                        Please wait a moment
-                    </p>
-                </div>
             </div>
         );
     }
@@ -163,21 +162,21 @@ const VideoInfoDisplay = () => {
                                         onChange={(e) => setSelectedVideoItag(e.target.value)}
                                     >
                                         <option value="">Select Video Quality</option>
-                                        {uniqueVideoFormats.map(format => (
-
-                                            // Enhanced option (limited styling due to browser constraints)
-                                            <option
-                                                key={format.itag}
-                                                value={format.itag}
-                                               
-                                            >
-                                                <div  className="text-sm py-2 px-3 bg-white hover:bg-blue-50 border-b border-gray-100">
-                                                {`📹 ${format.resolution && format.resolution !== 'Unknown'
-                                                    ? `${format.resolution.split('x')[1]}p`
-                                                    : format.resolution || 'Unknown'} ${format.fps || ''}fps • ${format.type === 'video_progressive' ? '🎬 Video + Audio' : '🎬 Video'} • ${format.size}`}
+                                        {uniqueVideoFormats.map(format => {
+                                            console.log('Video Format Size Check:', format);
+                                            return (
+                                                <option
+                                                    key={format.itag}
+                                                    value={format.itag}
+                                                >
+                                                    <div  className="text-sm py-2 px-3 bg-white hover:bg-blue-50 border-b border-gray-100">
+                                                    {`📹 ${format.resolution && format.resolution !== 'Unknown'
+                                                        ? `${format.resolution.split('x')[1]}p`
+                                                        : format.resolution || 'Unknown'} ${format.fps || ''}fps • ${format.type === 'video_progressive' ? '🎬 Video + Audio' : '🎬 Video'}${format.type === 'video_progressive' ? ` • ${format.size}` : ''}`}
                                                     </div>
-                                            </option>
-                                        ))}
+                                                </option>
+                                            );
+                                        })}
                                     </select>
                                     <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -9,8 +9,8 @@ const LoadingState = () => {
         </div>
       </div>
       <div className="text-center">
-        <p className="text-gray-800 font-semibold text-xl mb-2">
-          Getting video info...
+        <p className="text-gray-800 font-semibold animate-pulse text-xl mb-2">
+          Getting video info... 
         </p>
         <p className="text-gray-500 text-sm bg-gray-100/50 px-4 py-2 rounded-full inline-block">
           Please wait a moment

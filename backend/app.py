@@ -399,6 +399,7 @@ def get_formats():
             info = ydl.extract_info(youtube_url, download=False)
         
         print(f"Successfully fetched formats for: {info.get('title', '')}")
+        print("Raw formats from yt-dlp:", info.get('formats', []))
         
         # Initialize a single list for all relevant formats
         all_formats = []
